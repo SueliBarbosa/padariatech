@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PadariaTech — Gestão Inteligente de Padarias</title>
+  <link rel="stylesheet" href="./src/css/style.css">
+</head>
+<body>
+
+  <!-- ====================================================================
+       SEÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO)
+       ==================================================================== -->
+  <section id="auth-section" class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-badge">🥖</div>
+        <h1>PadariaTech</h1>
+        <p>Sistema Integrado de Gestão e Vendas</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="tab-login-btn" class="auth-tab-btn active">Entrar</button>
+        <button id="tab-signup-btn" class="auth-tab-btn">Criar Conta</button>
+      </div>
+
+      <div id="auth-alert" class="alert"></div>
+
+      <!-- Formulário de Login -->
+      <form id="form-login">
+        <div class="form-group">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" class="form-control" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Senha</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-submit-login" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+
+      <!-- Formulário de Cadastro -->
+      <form id="form-signup" style="display: none;">
+        <div class="form-group">
+          <label for="signup-email">E-mail</label>
+          <input type="email" id="signup-email" class="form-control" placeholder="seu@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Senha</label>
+          <input type="password" id="signup-password" class="form-control" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="signup-password-confirm">Confirmar Senha</label>
+          <input type="password" id="signup-password-confirm" class="form-control" placeholder="Repita sua senha" required autocomplete="new-password">
+        </div>
+        <button type="submit" id="btn-submit-signup" class="btn btn-primary btn-block">Criar Conta</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       LAYOUT PRINCIPAL DO SISTEMA (PAINEL ADMINISTRATIVO)
+       ==================================================================== -->
+  <div id="app-layout" class="app-layout" style="display: none;">
+    <!-- Barra Lateral -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span style="font-size: 24px;">🥖</span>
+        <h2>Padaria<span>Tech</span></h2>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-link active" data-view="dashboard">
+          <span>📊</span> Dashboard
+        </a>
+        <a href="#produtos" class="nav-link" data-view="produtos">
+          <span>📦</span> Produtos
+        </a>
+        <a href="#vendas" class="nav-link" data-view="vendas">
+          <span>🛒</span> Registrar Venda
+        </a>
+        <a href="#historico" class="nav-link" data-view="historico">
+          <span>📜</span> Histórico
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-badge" id="user-email-display">usuario@padaria.com</div>
+        <button id="btn-logout" class="btn-logout">
+          <span>🚪</span> Sair do Sistema
+        </button>
+      </div>
+    </aside>
+
+    <!-- Área Principal -->
+    <div class="main-wrapper">
+      <header class="top-bar">
+        <button id="mobile-menu-toggle" class="mobile-menu-btn">☰</button>
+        <div style="font-weight: 600; color: var(--primary);">Painel de Controle</div>
+      </header>
+
+      <main class="content-area">
+
+        <!-- 1. TELA DASHBOARD -->
+        <section id="section-dashboard" class="page-section active">
+          <div class="section-header">
+            <h2>Visão Geral da Padaria</h2>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="title">Faturamento Total</div>
+              <div class="value" id="dash-faturamento">R$ 0,00</div>
+            </div>
+            <div class="metric-card">
+              <div class="title">Total de Vendas</div>
+              <div class="value" id="dash-vendas-qtd">0</div>
+            </div>
+            <div class="metric-card">
+              <div class="title">Produtos Cadastrados</div>
+              <div class="value" id="dash-produtos-qtd">0</div>
+            </div>
+            <div class="metric-card warning-card">
+              <div class="title">Estoque Baixo (&le; 15 un)</div>
+              <div class="value" id="dash-estoque-baixo-qtd">0</div>
+            </div>
+          </div>
+
+          <div class="card-table">
+            <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: var(--primary);">
+              Últimas 5 Vendas
+            </div>
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Data e Hora</th>
+                    <th>Valor Total</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-ultimas-vendas-corpo">
+                  <tr><td colspan="3" style="text-align:center;">Carregando...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. TELA PRODUTOS -->
+        <section id="section-produtos" class="page-section">
+          <div class="section-header">
+            <h2>Gerenciamento de Produtos</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button id="btn-dados-teste" class="btn btn-secondary">⚡ Carregar Exemplos</button>
+              <button id="btn-novo-produto" class="btn btn-primary">+ Novo Produto</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 18px; max-width: 360px;">
+            <input type="text" id="busca-produto" class="form-control" placeholder="🔍 Buscar produto por nome...">
+          </div>
+
+          <div class="card-table">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-produtos-corpo">
+                  <tr><td colspan="5" style="text-align:center;">Carregando produtos...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. TELA REGISTRAR VENDA (PDV) -->
+        <section id="section-vendas" class="page-section">
+          <div class="section-header">
+            <h2>Frente de Caixa (PDV)</h2>
+          </div>
+
+          <div class="pos-layout">
+            <!-- Seleção de Itens -->
+            <div class="pos-products">
+              <div class="card-table" style="padding: 24px;">
+                <h3 style="font-size: 16px; margin-bottom: 16px; color: var(--primary);">Adicionar Item ao Carrinho</h3>
+                <form id="form-pdv-add">
+                  <div class="form-group">
+                    <label for="pdv-select-produto">Produto</label>
+                    <select id="pdv-select-produto" class="form-control" required>
+                      <option value="">Selecione um produto...</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="pdv-quantidade">Quantidade</label>
+                    <input type="number" id="pdv-quantidade" class="form-control" min="1" value="1" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-block">+ Incluir no Carrinho</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Resumo do Carrinho -->
+            <div class="pos-cart">
+              <h3>Itens da Venda</h3>
+              <div id="pdv-carrinho-itens" class="cart-items-list">
+                <p style="color: var(--text-muted); text-align: center; padding: 20px 0;">Carrinho vazio.</p>
+              </div>
+
+              <div class="cart-total-box">
+                <div class="cart-total-row">
+                  <span>Total:</span>
+                  <span id="pdv-total-carrinho">R$ 0,00</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px;">
+                <button id="btn-limpar-carrinho" class="btn btn-secondary" style="flex: 1;">Limpar</button>
+                <button id="btn-finalizar-venda" class="btn btn-primary" style="flex: 2;" disabled>Confirmar Venda</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TELA HISTÓRICO DE VENDAS -->
+        <section id="section-historico" class="page-section">
+          <div class="section-header">
+            <h2>Histórico de Vendas</h2>
+          </div>
+
+          <div class="card-table">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Data e Hora</th>
+                    <th>Valor Total</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-historico-corpo">
+                  <tr><td colspan="4" style="text-align:center;">Carregando histórico...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: NOVO / EDITAR PRODUTO
+       ==================================================================== -->
+  <div id="modal-produto" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-prod-titulo">Novo Produto</h3>
+        <button id="modal-close-produto" class="modal-close">&times;</button>
+      </div>
+
+      <div id="modal-prod-alert" class="alert"></div>
+
+      <form id="form-produto">
+        <div class="form-group">
+          <label for="prod-nome">Nome do Produto</label>
+          <input type="text" id="prod-nome" class="form-control" placeholder="Ex: Pão Francês" required maxlength="120">
+        </div>
+        <div class="form-group">
+          <label for="prod-categoria">Categoria</label>
+          <input type="text" id="prod-categoria" class="form-control" placeholder="Ex: Pães, Bebidas, Confeitaria" required maxlength="60">
+        </div>
+        <div class="form-group">
+          <label for="prod-preco">Preço Unitário (R$)</label>
+          <input type="number" id="prod-preco" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+        </div>
+        <div class="form-group">
+          <label for="prod-estoque">Quantidade em Estoque</label>
+          <input type="number" id="prod-estoque" class="form-control" min="0" placeholder="0" required>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;">
+          <button type="button" id="btn-cancelar-produto" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" id="btn-salvar-produto" class="btn btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: DETALHES DA VENDA
+       ==================================================================== -->
+  <div id="modal-detalhes-venda" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Detalhes da Venda <span id="detalhe-venda-id" style="color: var(--primary);">#</span></h3>
+        <button id="modal-close-venda" class="modal-close">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Data: <strong id="detalhe-venda-data">-</strong>
+      </p>
+
+      <div class="card-table" style="margin-bottom: 16px;">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Qtd</th>
+                <th>Preço Unit.</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="detalhe-venda-itens-corpo"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="text-align: right; font-size: 18px; font-weight: 700; color: var(--primary);">
+        Total: <span id="detalhe-venda-total">R$ 0,00</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/js/app.js"></script>
+</body>
+</html>
